@@ -4,6 +4,11 @@
 
 Show the battery level of a Razer BlackShark V2 HyperSpeed headset in your desktop's power applet on Linux, next to your wireless keyboard and mouse. No Razer Synapse needed.
 
+<p align="center">
+  <img src="docs/power-applet.png" alt="Cinnamon power applet listing a Magic Keyboard, an APC UPS and the Razer BlackShark V2 HyperSpeed at 89%" width="450"><br>
+  <sub><b>Cinnamon power applet</b>: the headset listed with its own icon, next to a keyboard and a UPS.</sub>
+</p>
+
 The headset only reports its battery through Razer's vendor protocol, which desktop tools don't understand. blackshark-battery reads it from the 2.4 GHz dongle and republishes it as a standard HID battery, so the kernel exposes it as a `power_supply` and UPower lists it as a headset. Anything that uses UPower picks it up: the Cinnamon, GNOME and KDE power applets, `upower -d`, and so on.
 
 ## Supported hardware
