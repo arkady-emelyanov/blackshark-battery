@@ -15,6 +15,9 @@ const UNIQ: &str = "blackshark-v2-hyperspeed";
 const VENDOR: u32 = 0x1532;
 const PRODUCT: u32 = 0x0565;
 
+/// Two small HID requests per check; the reference WebHID tool polls as often.
+const DEFAULT_INTERVAL: Duration = Duration::from_secs(5);
+
 /// hid-input may drop the first input report if it arrives before the virtual device
 /// finished probing, so repeat it shortly after creation.
 const RESEND_AFTER_CREATE: Duration = Duration::from_secs(2);
@@ -23,7 +26,7 @@ const USAGE: &str = "\
 usage: blackshark-battery <command>
 
 commands:
-  run [--interval SECONDS]  poll the headset and publish its battery (default every 60s)
+  run [--interval SECONDS]  poll the headset and publish its battery (default every 5s)
   status                    print the headset battery state once
   install [--yes]           install the binary, systemd service and udev rule (asks for root)
   uninstall [--yes]         remove them again
@@ -49,7 +52,7 @@ fn main() -> ExitCode {
             return parse_yes(rest).map_or_else(usage, |yes| ExitCode::from(install::uninstall(yes)));
         }
         ["status"] => print_status(),
-        ["run"] => run(Duration::from_secs(60)),
+        ["run"] => run(DEFAULT_INTERVAL),
         ["run", "--interval", secs] => match secs.parse::<u64>() {
             Ok(s) if s > 0 => run(Duration::from_secs(s)),
             _ => return usage(),

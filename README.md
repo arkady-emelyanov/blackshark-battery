@@ -58,11 +58,11 @@ The service runs as root because it needs two devices that only root can use: th
 - `journalctl -u blackshark-battery` shows level changes and when the headset comes and goes.
 - `upower -d` lists it as `Razer BlackShark V2 HyperSpeed`, type `headset`.
 
-The service checks the headset once a minute. When the headset is switched off or the dongle is unplugged, the entry disappears from the applet and comes back when the headset is on again.
+The service checks the headset every 5 seconds, so changes show up in the applet within a few seconds. When the headset is switched off or the dongle is unplugged, the entry disappears from the applet and comes back when the headset is on again.
 
 ## How it works
 
-1. Every minute it sends two read commands over the vendor HID interface: battery level (`0x21`) and charging state (`0x2a`). Normally they go to the dongle, which relays them to the headset over the air. While the headset is plugged into the computer by cable it stops answering through the dongle, so the commands go over the cable instead; the device is looked up afresh on every check, so switching back and forth needs nothing from you.
+1. Every 5 seconds it sends two read commands over the vendor HID interface: battery level (`0x21`) and charging state (`0x2a`). Normally they go to the dongle, which relays them to the headset over the air. While the headset is plugged into the computer by cable it stops answering through the dongle, so the commands go over the cable instead; the device is looked up afresh on every check, so switching back and forth needs nothing from you.
 2. It creates a virtual HID device through `/dev/uhid` whose report descriptor has a standard Battery Strength and Charging usage, and sends the values as input reports.
 3. The kernel's `hid-input` turns that into `/sys/class/power_supply/hid-blackshark-v2-hyperspeed-battery`, which UPower picks up like any Bluetooth mouse battery.
 
