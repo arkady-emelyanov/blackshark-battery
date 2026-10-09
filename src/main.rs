@@ -20,7 +20,7 @@ const DEFAULT_INTERVAL: Duration = Duration::from_secs(5);
 
 /// hid-input may drop the first input report if it arrives before the virtual device
 /// finished probing, so repeat it shortly after creation.
-const RESEND_AFTER_CREATE: Duration = Duration::from_secs(2);
+const RESEND_AFTER_CREATE: Duration = Duration::from_millis(250);
 
 const USAGE: &str = "\
 usage: blackshark-battery <command>

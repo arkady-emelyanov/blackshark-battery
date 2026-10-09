@@ -28,24 +28,27 @@ const DESCRIPTOR: &[u8] = &[
     0x09, 0x01,       // Usage (Consumer Control)
     0xa1, 0x01,       // Collection (Application)
     0x85, REPORT_ID,  //   Report ID
-    // hid-input only keeps a battery if the device also gets an input node,
-    // so carry one (never pressed) Mute key.
-    0x09, 0xe2,       //   Usage (Mute)
+    // Battery Strength must be the first byte: older kernels read the level of a
+    // GET_REPORT reply from buf[1] regardless of the descriptor.
+    0x05, 0x06,       //   Usage Page (Generic Device Controls)
+    0x09, 0x20,       //   Usage (Battery Strength)
     0x15, 0x00,       //   Logical Minimum (0)
-    0x25, 0x01,       //   Logical Maximum (1)
-    0x75, 0x01,       //   Report Size (1)
+    0x25, 0x64,       //   Logical Maximum (100)
+    0x75, 0x08,       //   Report Size (8)
     0x95, 0x01,       //   Report Count (1)
     0x81, 0x02,       //   Input (Data,Var,Abs)
     0x05, 0x85,       //   Usage Page (Battery System)
     0x09, 0x44,       //   Usage (Charging)
+    0x25, 0x01,       //   Logical Maximum (1)
+    0x75, 0x01,       //   Report Size (1)
+    0x81, 0x02,       //   Input (Data,Var,Abs)
+    // hid-input only keeps a battery if the device also gets an input node,
+    // so carry one (never pressed) Mute key.
+    0x05, 0x0c,       //   Usage Page (Consumer)
+    0x09, 0xe2,       //   Usage (Mute)
     0x81, 0x02,       //   Input (Data,Var,Abs)
     0x75, 0x06,       //   Report Size (6)
     0x81, 0x03,       //   Input (Const) padding
-    0x05, 0x06,       //   Usage Page (Generic Device Controls)
-    0x09, 0x20,       //   Usage (Battery Strength)
-    0x25, 0x64,       //   Logical Maximum (100)
-    0x75, 0x08,       //   Report Size (8)
-    0x81, 0x02,       //   Input (Data,Var,Abs)
     0xc0,             // End Collection
 ];
 
@@ -78,7 +81,7 @@ impl VirtualBattery {
     }
 
     pub fn update(&mut self, b: Battery) -> io::Result<()> {
-        self.report = [REPORT_ID, (b.charging as u8) << 1, b.percent];
+        self.report = [REPORT_ID, b.percent, b.charging as u8];
 
         let mut ev = [0u8; 4 + 2 + 3];
         ev[0..4].copy_from_slice(&UHID_INPUT2.to_ne_bytes());
