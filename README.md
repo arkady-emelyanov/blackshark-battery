@@ -16,7 +16,7 @@ The headset only reports its battery through Razer's vendor protocol, which desk
 | Device | USB ID | Status |
 |---|---|---|
 | BlackShark V2 HyperSpeed, 2.4 GHz dongle | `1532:0565` | Tested |
-| BlackShark V2 HyperSpeed, USB-C cable | `1532:056e` | Not supported yet: plug the dongle in too, the cable only charges |
+| BlackShark V2 HyperSpeed, USB-C cable | `1532:056e` | Tested: while charging from the computer, the headset answers over the cable instead |
 | BlackShark V2 Pro and other models | | Not supported: they use a different protocol |
 
 `lsusb -d 1532:` shows which one you have.
@@ -62,7 +62,7 @@ The service checks the headset once a minute. When the headset is switched off o
 
 ## How it works
 
-1. Every minute it sends two read commands over the dongle's vendor HID interface: battery level (`0x21`) and charging state (`0x2a`). The dongle relays them to the headset over the air.
+1. Every minute it sends two read commands over the vendor HID interface: battery level (`0x21`) and charging state (`0x2a`). Normally they go to the dongle, which relays them to the headset over the air. While the headset is plugged into the computer by cable it stops answering through the dongle, so the commands go over the cable instead; the device is looked up afresh on every check, so switching back and forth needs nothing from you.
 2. It creates a virtual HID device through `/dev/uhid` whose report descriptor has a standard Battery Strength and Charging usage, and sends the values as input reports.
 3. The kernel's `hid-input` turns that into `/sys/class/power_supply/hid-blackshark-v2-hyperspeed-battery`, which UPower picks up like any Bluetooth mouse battery.
 

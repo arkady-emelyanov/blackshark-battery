@@ -90,7 +90,6 @@ fn print_status() -> io::Result<()> {
 }
 
 fn run(interval: Duration) -> io::Result<()> {
-    let mut dongle: Option<Dongle> = None;
     let mut battery: Option<VirtualBattery> = None;
     let mut last: Option<Battery> = None;
     let mut next_poll = Instant::now();
@@ -100,7 +99,7 @@ fn run(interval: Duration) -> io::Result<()> {
         let now = Instant::now();
         if now >= next_poll {
             next_poll = now + interval;
-            let state = poll_headset(&mut dongle);
+            let state = poll_headset();
             if state != last {
                 match state {
                     Some(b) => eprintln!("battery {}%{}", b.percent, if b.charging { ", charging" } else { "" }),
@@ -140,21 +139,15 @@ fn run(interval: Duration) -> io::Result<()> {
     }
 }
 
-/// Query the headset, (re)opening the dongle as needed. `None` when the dongle is
-/// unplugged or the headset is off.
-fn poll_headset(dongle: &mut Option<Dongle>) -> Option<Battery> {
-    if dongle.is_none() {
-        *dongle = Dongle::open().unwrap_or_else(|e| {
-            eprintln!("open dongle: {e}");
-            None
-        });
-    }
-    match dongle.as_mut()?.battery() {
-        Ok(b) => b,
-        Err(e) => {
-            eprintln!("dongle: {e}");
-            *dongle = None;
-            None
-        }
-    }
+/// Query the headset. Looks the device up afresh every time, so it follows the headset
+/// between the dongle and the charging cable. `None` when it's off or unplugged.
+fn poll_headset() -> Option<Battery> {
+    let result = Dongle::open().and_then(|d| match d {
+        Some(mut d) => d.battery(),
+        None => Ok(None),
+    });
+    result.unwrap_or_else(|e| {
+        eprintln!("headset: {e}");
+        None
+    })
 }
