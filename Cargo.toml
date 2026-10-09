@@ -1,0 +1,12 @@
+[package]
+name = "blackshark-battery"
+version = "0.1.0"
+edition = "2024"
+description = "Expose Razer BlackShark V2 HyperSpeed battery level to UPower via a virtual HID battery"
+
+[dependencies]
+libc = "0.2"
+
+[profile.release]
+strip = true
+lto = true
